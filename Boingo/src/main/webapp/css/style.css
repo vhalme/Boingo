@@ -1,0 +1,97 @@
+/* --------- demo presentation------------ */
+body {font: normal 16px/1.5em helvetica, arial, sans-serif; margin:0; width:100%;}
+#demo-nav {width: 500px; margin: 10px auto; list-style: none; float: right}
+#demo-nav li {display: inline}
+#demo-nav a {float: left; display: block; color:#fff; padding:0 10px}
+header, footer {height:50px; padding:5px 5%; color:#fff; background: #777}
+#content, #secondary {min-height: 600px;}
+#content {background:#ccc;}
+#secondary, #container {background:#eee;}
+h2 {font-size: 1.0em}
+p {font-size: 0.9em}
+/* --------------------------------------- */
+
+
+/* ----------- container ------------- */
+#container {
+	
+	max-width: 75em;
+	margin: 0 auto;
+
+}
+
+/* --------------------------------------- */
+
+
+
+/* ----------- arrange columns ------------- */
+#primary {
+	
+	float: left;
+	
+	width: 25%;
+	
+	padding: 1.0em;
+
+}
+
+#content {
+	
+	float:left;
+	
+	position: relative;
+	
+	padding: 0px;
+
+}
+
+#secondary {
+	
+	float: left;
+	
+	width: 25%;
+	
+	padding: 1.0em;
+
+}
+
+#content p {
+	max-width:80%;
+}
+
+#primary p, #secondary p {
+	max-width:95%;
+}
+/* --------------------------------------- */
+
+
+
+/* --------------------------------------- */
+footer {
+	clear:both;
+}
+/* --------------------------------------- */
+
+#mapCanvas {
+	
+	width: 100%; 
+	height: 100%;
+	
+	position: absolute;
+	
+	overflow: hidden;
+	
+}
+
+.sourceListTable {
+	
+	width: 100%;
+	border: 1px #000 solid;	
+	
+}
+
+.sourceListTable td {
+	padding-right: 12px;
+	padding-left: 6px;
+}
+
