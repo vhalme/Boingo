@@ -32,8 +32,6 @@
 		<!-- App styles -->
 		<link rel="stylesheet" href="css/style.css">
 
-		<!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
-
 		<!-- All JavaScript at the bottom, except this Modernizr build.
 		Modernizr enables HTML5 elements & feature detects for optimal performance.
 		Create your own custom Modernizr build: www.modernizr.com/download/ -->
@@ -46,7 +44,7 @@
 		chromium.org/developers/how-tos/chrome-frame-getting-started -->
 		<!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 		
-		Hello world!
+		Boingo!
 		
 		<script src="js/libs/three.min.js"></script>
 
@@ -57,8 +55,12 @@
 			var container, stats;
 
 			var camera, scene, renderer;
+			var camZDelta = 0;
+			var camXDelta = 0;
+			var camDir = 0;
+			var camAngle = 0;
 
-			var vehicle, plane, ground;
+			var vehicle, plane, floor;
 
 			var targetRotation = 0;
 			var targetRotationOnMouseDown = 0;
@@ -69,6 +71,8 @@
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
 
+			var fwd = 1;
+			
 			init();
 			animate();
 
@@ -82,30 +86,48 @@
 				info.style.top = '10px';
 				info.style.width = '100%';
 				info.style.textAlign = 'center';
-				info.innerHTML = 'Drag to spin the cube';
+				info.innerHTML = 'Hello...';
 				container.appendChild( info );
 
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-				camera.position.y = 150;
-				camera.position.z = 500;
+				camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.target = new THREE.Vector3( 0, 0, 0 );
+				camera.position.set( 0, 75, 0 );
 
 				scene = new THREE.Scene();
+				
+				// Floor
+				
+				//var planeSimple = new THREE.PlaneGeometry( 200, 300 );
+				//var planeTesselated = new THREE.PlaneGeometry( 100, 300, 25, 40 );
+				var planeTesselated = new THREE.PlaneGeometry( 2000, 2000, 20, 20 );
+				var matWire = new THREE.MeshBasicMaterial( { color :0x110000, wireframe: true, wireframeLinewidth: 0.1 } );
 
-				// Cube
+				floor = new THREE.Mesh( planeTesselated, matWire );
+				floor.rotation.x = - Math.PI / 2;
+				floor.position.set( 0, 0, 0 );
+				scene.add( floor );
 
-				var geometry = new THREE.PlaneGeometry( 200, 200, 1, 1 );
+				// Vehicle
+
+				var geometry = new THREE.CubeGeometry( 20, 5, 30 );
 				
 				geometry.faces[0].color.setHex( 0x888888 );
+				geometry.faces[1].color.setHex( 0xacacac );
+				geometry.faces[2].color.setHex( 0xe0e0e0 );
+				geometry.faces[3].color.setHex( 0xd3d3d3 );
+				geometry.faces[4].color.setHex( 0x777777 );
+				geometry.faces[5].color.setHex( 0xa0a0a0 );
 				
 				var material = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
 
 				vehicle = new THREE.Mesh( geometry, material );
-				vehicle.rotation.x = Math.PI * 0.75;
-				vehicle.position.y = 150;
+				//vehicle.rotation.x = - Math.PI / 2;
+				vehicle.position.set( 0, 30, 0 );
 				scene.add( vehicle );
 
-				// Plane
-
+				// Shadow
+				
+				/*
 				var geometry = new THREE.PlaneGeometry( 200, 200 );
 				geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
@@ -113,21 +135,9 @@
 
 				plane = new THREE.Mesh( geometry, material );
 				scene.add( plane );
-				
-				
-				// Ground
+				*/
 
-				var geometry = new THREE.PlaneGeometry( 1000, 1000, 10, 10 );
-				geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
-
-				var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-
-				ground = new THREE.Mesh( geometry, material );
-				ground.position.y -= 100;
-				
-				scene.add( ground );
-
-				renderer = new THREE.CanvasRenderer();
+				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
 				container.appendChild( renderer.domElement );
@@ -140,10 +150,15 @@
 				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
 				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+				
+				document.addEventListener( 'keyup', onKeyUp, false );
+				document.addEventListener( 'keydown', onKeyDown, false );
 
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
+				
+				alert(camera.position.z + "/" + floor.position.z);
 
 			}
 
@@ -159,6 +174,75 @@
 
 			}
 
+			function onKeyUp(event) {
+				
+				event.preventDefault();
+				
+				if(event.keyCode == 38) {
+					
+					fwd = 0;
+				
+				} else if(event.keyCode == 37) {
+					
+					camDir = 0;
+					
+					/*
+					var dx = Math.cos(camera.rotation.y);
+					var dz = Math.sin(camera.rotation.y);
+					
+					camera.target.x = camera.position.x - (dx * 200);
+					camera.target.z = camera.position.z - (dz * 200);
+					
+					camera.lookAt(camera.target);
+					*/
+					
+					//alert(dx+"/"+dz);
+					
+				} else if(event.keyCode == 39) {
+					
+					camDir = 0;
+					
+					//alert(dx+"/"+dz);
+					
+				}
+			
+			}
+			
+			
+			function onKeyDown(event) {
+				
+				event.preventDefault();
+			
+				if(event.keyCode == 38) {
+					
+					fwd = 4;
+				
+				} else if(event.keyCode == 37) {
+					
+					camDir = 0.01;
+	
+					//vehicle.position.x += dx*4;
+					//camera.position.x += dx*4;
+				
+					//vehicle.position.z += dz*4;
+					//camera.position.z += dz*4;
+						
+				} else if(event.keyCode == 39) {
+					
+					camDir = -0.01;
+	
+					//vehicle.position.x += dx*4;
+					//camera.position.x += dx*4;
+				
+					//vehicle.position.z += dz*4;
+					//camera.position.z += dz*4;
+				
+				
+				}
+				
+			}
+			
+			
 			//
 
 			function onDocumentMouseDown( event ) {
@@ -237,8 +321,56 @@
 
 			function render() {
 				
-				vehicle.rotation.y += ( targetRotation - vehicle.rotation.y ) * 0.05;
-				plane.rotation.y = vehicle.rotation.y;
+				//plane.rotation.y = vehicle.rotation.y;
+				
+				camAngle += camDir;
+				
+				var dz = -Math.cos(camAngle);
+				var dx = -Math.sin(camAngle);
+				
+				camera.position.z += dz*fwd;
+				//vehicle.position.z += dz*fwd;
+				camera.position.x += dx*fwd;
+				//vehicle.position.x += dx*fwd;
+				
+				//camera.rotation.y += camDir;
+					
+				camera.target.x = camera.position.x + (dx * 500);
+				camera.target.z = camera.position.z + (dz * 500);
+				
+				vehicle.position.x = camera.position.x + (dx * 200); //camera.target.x;
+				vehicle.position.z = camera.position.z + (dz * 200);
+					
+				camera.lookAt(camera.target);
+				
+				vehicle.rotation.y = camera.rotation.y;
+				
+				camZDelta += dz*fwd;
+				camXDelta += dx*fwd;
+				
+				if(camZDelta < -100) {
+					
+					floor.position.z += -101;
+					camZDelta = 0;
+				
+				} else if(camZDelta > 100) {
+					
+					floor.position.z -= -101;
+					camZDelta = 0;
+				
+				}
+				
+				if(camXDelta < -100) {
+					
+					floor.position.x += -101;
+					camXDelta = 0;
+				
+				} else if(camXDelta > 100) {
+					
+					floor.position.x -= -101;
+					camXDelta = 0;
+				}
+				
 				
 				renderer.render( scene, camera );
 
