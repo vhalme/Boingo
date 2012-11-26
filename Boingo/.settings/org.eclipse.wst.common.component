@@ -6,7 +6,7 @@
         <wb-resource deploy-path="/" source-path="/src/main/webapp"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/webapp"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
-        <property name="context-root" value="StubMavenWeb"/>
         <property name="java-output-path" value="/StubMavenWeb/target/classes"/>
+        <property name="context-root" value="Boingo"/>
     </wb-module>
 </project-modules>

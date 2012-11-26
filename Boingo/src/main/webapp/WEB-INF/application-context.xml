@@ -41,7 +41,7 @@
 	
 	<bean id='jacksonProvider' class='org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider' />
 	
-	<jaxrs:server id="stub" address="/">
+	<jaxrs:server id="source" address="/">
     	<jaxrs:serviceBeans>
         	<ref bean="stubServiceImpl"/>
         </jaxrs:serviceBeans>
