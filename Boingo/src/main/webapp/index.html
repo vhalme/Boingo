@@ -57,10 +57,10 @@
 			var camera, scene, renderer;
 			var camZDelta = 0;
 			var camXDelta = 0;
-			var camDir = 0;
-			var camAngle = 0;
+			var vehDir = 0, trackDir = 0;
+			var vehAngle = Math.PI / 2, trackAngle = 0;
 
-			var vehicle, plane, floor;
+			var vehicle, plane, floor, mark;
 
 			var targetRotation = 0;
 			var targetRotationOnMouseDown = 0;
@@ -70,8 +70,10 @@
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
+			
+			var info;
 
-			var fwd = 1;
+			var fwd = 0;
 			
 			init();
 			animate();
@@ -81,17 +83,17 @@
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				var info = document.createElement( 'div' );
+				info = document.createElement( 'div' );
 				info.style.position = 'absolute';
 				info.style.top = '10px';
 				info.style.width = '100%';
 				info.style.textAlign = 'center';
-				info.innerHTML = 'Hello...';
+				
 				container.appendChild( info );
 
 				camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.target = new THREE.Vector3( 0, 0, 0 );
-				camera.position.set( 0, 75, 0 );
+				camera.position.set( 0, 1000, 0 );
 
 				scene = new THREE.Scene();
 				
@@ -99,7 +101,7 @@
 				
 				//var planeSimple = new THREE.PlaneGeometry( 200, 300 );
 				//var planeTesselated = new THREE.PlaneGeometry( 100, 300, 25, 40 );
-				var planeTesselated = new THREE.PlaneGeometry( 2000, 2000, 20, 20 );
+				var planeTesselated = new THREE.PlaneGeometry( 1200, 360, 12, 3 );
 				var matWire = new THREE.MeshBasicMaterial( { color :0x110000, wireframe: true, wireframeLinewidth: 0.1 } );
 
 				floor = new THREE.Mesh( planeTesselated, matWire );
@@ -109,7 +111,7 @@
 
 				// Vehicle
 
-				var geometry = new THREE.CubeGeometry( 20, 5, 30 );
+				var geometry = new THREE.CubeGeometry( 20, 10, 30 );
 				
 				geometry.faces[0].color.setHex( 0x888888 );
 				geometry.faces[1].color.setHex( 0xacacac );
@@ -121,9 +123,38 @@
 				var material = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
 
 				vehicle = new THREE.Mesh( geometry, material );
-				//vehicle.rotation.x = - Math.PI / 2;
 				vehicle.position.set( 0, 30, 0 );
 				scene.add( vehicle );
+				
+				var geometry = new THREE.CubeGeometry( 5, 5, 5 );
+				
+				geometry.faces[0].color.setHex( 0xff0000 );
+				geometry.faces[1].color.setHex( 0xff0000 );
+				geometry.faces[2].color.setHex( 0xff0000 );
+				geometry.faces[3].color.setHex( 0xff0000 );
+				geometry.faces[4].color.setHex( 0xff0000 );
+				geometry.faces[5].color.setHex( 0xff0000 );
+				
+				var markMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+				mark = new THREE.Mesh( geometry, markMaterial );
+				mark.position.set( 0, 30, 200 );
+				scene.add( mark );
+				
+				var geometry = new THREE.CubeGeometry( 5, 5, 5 );
+				
+				geometry.faces[0].color.setHex( 0x0000ff );
+				geometry.faces[1].color.setHex( 0x0000ff );
+				geometry.faces[2].color.setHex( 0x0000ff );
+				geometry.faces[3].color.setHex( 0x0000ff );
+				geometry.faces[4].color.setHex( 0x0000ff );
+				geometry.faces[5].color.setHex( 0x0000ff );
+				
+				var mark2Material = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+				mark2 = new THREE.Mesh( geometry, mark2Material );
+				mark2.position.set( 0, 30, 200 );
+				scene.add( mark2 );
 
 				// Shadow
 				
@@ -158,7 +189,6 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 				
-				alert(camera.position.z + "/" + floor.position.z);
 
 			}
 
@@ -184,25 +214,23 @@
 				
 				} else if(event.keyCode == 37) {
 					
-					camDir = 0;
+					vehDir = 0;
 					
-					/*
-					var dx = Math.cos(camera.rotation.y);
-					var dz = Math.sin(camera.rotation.y);
-					
-					camera.target.x = camera.position.x - (dx * 200);
-					camera.target.z = camera.position.z - (dz * 200);
-					
-					camera.lookAt(camera.target);
-					*/
-					
-					//alert(dx+"/"+dz);
 					
 				} else if(event.keyCode == 39) {
 					
-					camDir = 0;
+					vehDir = 0;
 					
-					//alert(dx+"/"+dz);
+					
+				} else if(event.keyCode == 65) {
+					
+					trackDir = 0;
+					
+					
+				} else if(event.keyCode == 68) {
+					
+					trackDir = 0;
+					
 					
 				}
 			
@@ -215,36 +243,31 @@
 			
 				if(event.keyCode == 38) {
 					
-					fwd = 4;
+					fwd = 6;
 				
 				} else if(event.keyCode == 37) {
 					
-					camDir = 0.01;
-	
-					//vehicle.position.x += dx*4;
-					//camera.position.x += dx*4;
-				
-					//vehicle.position.z += dz*4;
-					//camera.position.z += dz*4;
+					vehDir = 0.02;
 						
 				} else if(event.keyCode == 39) {
 					
-					camDir = -0.01;
-	
-					//vehicle.position.x += dx*4;
-					//camera.position.x += dx*4;
+					vehDir = -0.02;
 				
-					//vehicle.position.z += dz*4;
-					//camera.position.z += dz*4;
-				
-				
+				} else if(event.keyCode == 65) {
+					
+					trackDir = 0.02;
+					
+					
+				} else if(event.keyCode == 68) {
+					
+					trackDir = -0.02;
+					
+					
 				}
 				
 			}
 			
 			
-			//
-
 			function onDocumentMouseDown( event ) {
 
 				event.preventDefault();
@@ -308,7 +331,6 @@
 
 			}
 
-			//
 
 			function animate() {
 
@@ -321,54 +343,88 @@
 
 			function render() {
 				
-				//plane.rotation.y = vehicle.rotation.y;
+				vehAngle += vehDir;
+				trackAngle += trackDir;
 				
-				camAngle += camDir;
+				var dz = -Math.cos(vehAngle);
+				var dx = -Math.sin(vehAngle);
 				
-				var dz = -Math.cos(camAngle);
-				var dx = -Math.sin(camAngle);
+				vehicle.rotation.y = vehAngle;
+				floor.rotation.z = trackAngle;
 				
-				camera.position.z += dz*fwd;
-				//vehicle.position.z += dz*fwd;
-				camera.position.x += dx*fwd;
-				//vehicle.position.x += dx*fwd;
+				var vPosX = vehicle.position.x + dx*fwd;
+				var vPosZ = vehicle.position.z + dz*fwd;
 				
-				//camera.rotation.y += camDir;
+				var vdx1 = vPosX - floor.position.x;
+				var vdz1 = vPosZ - floor.position.z;
+				var vd1 = (Math.sqrt(vdx1*vdx1 + vdz1*vdz1));
+				
+				var vdx2 = vPosX - floor.position.x;
+				var vdz2 = vPosZ - floor.position.z;
+				var vd2 = (Math.sqrt(vdx2*vdx2 + vdz2*vdz2));
+				
+				var mTopX = Math.sin(trackAngle-Math.PI*(1/2))*600;
+				var mTopZ = Math.cos(trackAngle-Math.PI*(1/2))*600;
+				
+				var mBottomX = Math.sin(trackAngle-Math.PI*(3/2))*600;
+				var mBottomZ = Math.cos(trackAngle-Math.PI*(3/2))*600;
+				
+				mark.position.x = mTopX;
+				mark.position.z = mTopZ;
+				
+				mark2.position.x = Math.sin(trackAngle)*180;
+				mark2.position.z = Math.cos(trackAngle)*180;
+				
+				var vehicleAxisAngle = Math.atan(vdx1 / vdz1);
+				var trackAxisAngle = Math.atan(mark.position.x / mark.position.z);
+				
+				var dAngle = vehicleAxisAngle - trackAxisAngle;
+				var shortAxis = Math.cos(dAngle)*vd1;
+				
+				var axisRem = 600 - Math.abs(shortAxis);
+				
+				var vehicleAxisAngle2 = Math.atan(vdx2 / vdz2);
+				var trackAxisAngle2 = Math.atan(mark2.position.x / mark2.position.z);
+				
+				var dAngle2 = vehicleAxisAngle2 - trackAxisAngle2;
+				var shortAxis2 = Math.cos(dAngle2)*vd2;
+				
+				var axisRem2 = 180 - Math.abs(shortAxis2);
+				
+				info.innerHTML = 
+					'('+Math.round(vehicle.position.z)+','+Math.round(vehicle.position.x)+'); '+
+					'('+Math.round(camera.position.z)+','+Math.round(camera.position.x)+'); '+
+					'('+Math.round(floor.position.z)+','+Math.round(floor.position.x)+'); '+
+					'('+Math.round(trackAngle, 2)+','+Math.round(floor.position.x)+'); ';
+				
+				
+				
+				if(axisRem < 300) {
 					
-				camera.target.x = camera.position.x + (dx * 500);
-				camera.target.z = camera.position.z + (dz * 500);
-				
-				vehicle.position.x = camera.position.x + (dx * 200); //camera.target.x;
-				vehicle.position.z = camera.position.z + (dz * 200);
-					
-				camera.lookAt(camera.target);
-				
-				vehicle.rotation.y = camera.rotation.y;
-				
-				camZDelta += dz*fwd;
-				camXDelta += dx*fwd;
-				
-				if(camZDelta < -100) {
-					
-					floor.position.z += -101;
-					camZDelta = 0;
-				
-				} else if(camZDelta > 100) {
-					
-					floor.position.z -= -101;
-					camZDelta = 0;
-				
+					floor.position.x = vehicle.position.x;
+					//floor.position.z = vehicle.position.z;
+						
 				}
 				
-				if(camXDelta < -100) {
+				if(axisRem2 < 0) {
 					
-					floor.position.x += -101;
-					camXDelta = 0;
+					fwd = 0;
 				
-				} else if(camXDelta > 100) {
+				} else {
+				
 					
-					floor.position.x -= -101;
-					camXDelta = 0;
+					vehicle.position.x = vPosX;
+					vehicle.position.z = vPosZ;			
+				
+					camera.position.x = vehicle.position.x + (dx*150);
+					camera.position.z = vehicle.position.z + (dz*150);
+				
+					camera.target.x = camera.position.x;
+					camera.target.y = vehicle.position.y;
+					camera.target.z = camera.position.z;
+				
+					camera.lookAt(camera.target);
+				
 				}
 				
 				
