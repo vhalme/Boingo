@@ -1,4 +1,4 @@
-var gpsOn = true;
+var gpsOn = false;
 var lng, lat;
 
 function initGps() {
@@ -40,9 +40,11 @@ function initGps() {
 
 }
 
+var mouse = { x: 0, y: 0 }, INTERSECTED;
+
 var container, stats;
 
-			var camera, scene, renderer;
+			var camera, scene, renderer, projector;
 			var camZDelta = 0;
 			var camXDelta = 0;
 			var vehDir = 0, trackDir = 0;
@@ -158,7 +160,9 @@ var container, stats;
 				plane = new THREE.Mesh( geometry, material );
 				scene.add( plane );
 				*/
-
+				
+				projector = new THREE.Projector();
+				
 				renderer = new THREE.CanvasRenderer();
 				renderer.setSize(canvasWidth, canvasHeight);
 				container.append( renderer.domElement );
@@ -238,7 +242,34 @@ var container, stats;
 				});
 				
 				
-				
+				container.click(function(e) {
+				    
+					var offset = $(this).offset();
+				    
+					var mx = e.clientX - offset.left;
+				    var my = e.clientY - offset.top;
+				    
+				    mouse.x = ( mx / canvasWidth ) * 2 - 1;
+					mouse.y = - ( my / canvasHeight ) * 2 + 1;
+					
+					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+					projector.unprojectVector( vector, camera );
+					
+					var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+
+					var intersects = ray.intersectObjects( scene.children );
+
+					if ( intersects.length > 0 ) {
+						
+						//alert(intersects[0]);
+						//alert(intersects[0].point.x+'/'+intersects[0].point.y+'/'+intersects[0].point.z);
+						mark.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+						scene.add(mark);
+						
+					}
+				    
+				 
+				});
 				
 
 			}
@@ -263,6 +294,15 @@ var container, stats;
 				renderer.setSize( canvasWidth, canvasHeight );
 				
 				
+			}
+			
+			function onMouseUp( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
 			}
 
 			function onKeyUp(event) {
