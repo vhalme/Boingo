@@ -42,15 +42,22 @@ function initGps() {
 
 var mouse = { x: 0, y: 0 }, INTERSECTED;
 
+var growTarget = false;
+var targetRadius = 1;
+
 var container, stats;
 
+	var sim = false;
+	var simAngleFrames = 1000;
+	var simSpeedFrames = 1000;
+	
 			var camera, scene, renderer, projector;
 			var camZDelta = 0;
 			var camXDelta = 0;
 			var vehDir = 0, trackDir = 0;
 			var vehAngle = Math.PI / 2, trackAngle = 0;
 
-			var vehicle, plane, floor, mark;
+			var vehicle, plane, floor, mark, target;
 
 			var targetRotation = 0;
 			var targetRotationOnMouseDown = 0;
@@ -69,6 +76,8 @@ var container, stats;
 			var viewMode = 0;
 			
 			var canvasWidth, canvasHeight;
+			
+			var targetGeometry;
 			
 			init();
 			animate();
@@ -119,20 +128,24 @@ var container, stats;
 				vehicle.position.set( 0, 30, 0 );
 				scene.add( vehicle );
 				
-				var geometry = new THREE.CubeGeometry( 5, 5, 5 );
+				var targetGeometry = new THREE.TorusGeometry( 30, 6, 2, 8, 2*Math.PI );
 				
-				geometry.faces[0].color.setHex( 0xff0000 );
-				geometry.faces[1].color.setHex( 0xff0000 );
-				geometry.faces[2].color.setHex( 0xff0000 );
-				geometry.faces[3].color.setHex( 0xff0000 );
-				geometry.faces[4].color.setHex( 0xff0000 );
-				geometry.faces[5].color.setHex( 0xff0000 );
-				
-				var markMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
-
-				mark = new THREE.Mesh( geometry, markMaterial );
-				mark.position.set( 0, 30, 200 );
-				//scene.add( mark );
+				targetGeometry.faces[0].color.setHex( 0xff0000 );
+				targetGeometry.faces[1].color.setHex( 0xff0000 );
+				targetGeometry.faces[2].color.setHex( 0xff0000 );
+				targetGeometry.faces[3].color.setHex( 0xff0000 );
+				targetGeometry.faces[4].color.setHex( 0xff0000 );
+				targetGeometry.faces[5].color.setHex( 0xff0000 );
+				targetGeometry.faces[6].color.setHex( 0xff0000 );
+				targetGeometry.faces[7].color.setHex( 0xff0000 );
+				targetGeometry.faces[8].color.setHex( 0xff0000 );
+				targetGeometry.faces[9].color.setHex( 0xff0000 );
+				targetGeometry.faces[10].color.setHex( 0xff0000 );
+				targetGeometry.faces[11].color.setHex( 0xff0000 );
+				targetGeometry.faces[12].color.setHex( 0xff0000 );
+				targetGeometry.faces[13].color.setHex( 0xff0000 );
+				targetGeometry.faces[14].color.setHex( 0xff0000 );
+				targetGeometry.faces[15].color.setHex( 0xff0000 );
 				
 				var geometry = new THREE.CubeGeometry( 5, 5, 5 );
 				
@@ -178,6 +191,9 @@ var container, stats;
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
+				
+				
+				
 				
 				$("#view").bind("touchend", function(event) {
 					
@@ -242,16 +258,169 @@ var container, stats;
 				});
 				
 				
+				$("#sim").mouseup(function() {
+					
+					event.preventDefault();
+					
+					if(sim == true) {
+						sim = false;
+						$(this).css("background", "#ffffff");
+					} else {
+						sim = true;
+						$(this).css("background", "#ff0000");
+					}
+					
+				});
+				
+				
+				$("#sim").bind("touchend", function(event) {
+					
+					event.preventDefault();
+					
+					if(sim == true) {
+						sim = false;
+						$(this).css("background", "#ffffff");
+					} else {
+						sim = true;
+						$(this).css("background", "#ff0000");
+					}
+					
+				});
+				
+				
+				$("#canvasContainer").bind("touchstart", function(event) {
+					
+					event.preventDefault();
+					
+					growTarget = true;
+					
+					var targetMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+					target = new THREE.Mesh( targetGeometry, targetMaterial );
+					target.doubleSided = true;
+					target.rotation.x = Math.PI / 2;
+					
+					var offset = container.offset();
+					
+					var clientX = event.touches[0] != undefined ? event.touches[0].clientX : event.clientX;
+					var clientY = event.touches[0] != undefined ? event.touches[0].clientY : event.clientY;
+					
+					//var clientX = event.clientX;
+					//var clientY = event.clientY;
+					
+					var mx = clientX - offset.left;
+					var my = clientY - offset.top;
+			    
+					mouse.x = ( mx / canvasWidth ) * 2 - 1;
+					mouse.y = - ( my / canvasHeight ) * 2 + 1;
+				
+					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+					projector.unprojectVector( vector, camera );
+				
+				
+					var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+				
+					var intersects = ray.intersectObjects( scene.children );
+
+					if ( intersects.length > 0 ) {
+					
+						target.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+						scene.add(target);
+					
+					}
+					
+					
+				});
+				
+				
+				$("#canvasContainer").bind("touchend", function(event) {
+					
+					event.preventDefault();
+					
+					//canvasMouseUp(event);
+					
+					growTarget = false;
+					targetRadius = 1;
+					
+					//alert(targetRadius);
+					
+				});
+				
+				$("#canvasContainer").bind("mousedown", function(event) {
+					
+					event.preventDefault();
+					
+					//canvasMouseDown(event);
+					
+					growTarget = true;
+					
+					var targetMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+					target = new THREE.Mesh( targetGeometry, targetMaterial );
+					target.doubleSided = true;
+					target.rotation.x = Math.PI / 2;
+					
+					var offset = container.offset();
+			    
+					var mx = event.clientX - offset.left;
+					var my = event.clientY - offset.top;
+			    
+					mouse.x = ( mx / canvasWidth ) * 2 - 1;
+					mouse.y = - ( my / canvasHeight ) * 2 + 1;
+				
+					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+					projector.unprojectVector( vector, camera );
+				
+				
+					var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+				
+					var intersects = ray.intersectObjects( scene.children );
+
+					if ( intersects.length > 0 ) {
+					
+						target.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+						scene.add(target);
+					
+					}
+					
+					
+				});
+				
+				
+				$("#canvasContainer").bind("mouseup", function(event) {
+					
+					//canvasMouseUp(event);
+					
+					growTarget = false;
+					targetRadius = 1;
+					
+					//alert(targetRadius);
+					
+					
+				});
+				
+				
 				container.click(function(e) {
-				    
+					
+					//canvasMouseUp(e);
+					
+					/*
+					var targetMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+					target = new THREE.Mesh( targetGeometry, targetMaterial );
+					target.doubleSided = true;
+					target.rotation.x = Math.PI / 2;
+					
 					var offset = $(this).offset();
 				    
-					var mx = e.clientX - offset.left;
-				    var my = e.clientY - offset.top;
+					var mx = event.clientX - offset.left;
+				    var my = event.clientY - offset.top;
 				    
 				    mouse.x = ( mx / canvasWidth ) * 2 - 1;
 					mouse.y = - ( my / canvasHeight ) * 2 + 1;
 					
+					alert(mouse.x+"/"+mouse.y);
+				    
 					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 					projector.unprojectVector( vector, camera );
 					
@@ -261,13 +430,11 @@ var container, stats;
 
 					if ( intersects.length > 0 ) {
 						
-						//alert(intersects[0]);
-						//alert(intersects[0].point.x+'/'+intersects[0].point.y+'/'+intersects[0].point.z);
-						mark.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
-						scene.add(mark);
+						target.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+						scene.add(target);
 						
 					}
-				    
+					*/
 				 
 				});
 				
@@ -295,6 +462,50 @@ var container, stats;
 				
 				
 			}
+			
+			function canvasMouseDown(event) {
+				
+				growTarget = true;
+				
+			}
+			
+			function canvasMouseUp(event) {
+				
+				growTarget = false;
+				
+				var targetMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+				var target = new THREE.Mesh( targetGeometry, targetMaterial );
+				target.doubleSided = true;
+				target.rotation.x = Math.PI / 2;
+				
+				var offset = container.offset();
+			    
+				var mx = event.clientX - offset.left;
+			    var my = event.clientY - offset.top;
+			    
+			    mouse.x = ( mx / canvasWidth ) * 2 - 1;
+				mouse.y = - ( my / canvasHeight ) * 2 + 1;
+				
+				alert(mouse.x+"/"+mouse.y);
+				
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+				
+				
+				var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+				
+				var intersects = ray.intersectObjects( scene.children );
+
+				if ( intersects.length > 0 ) {
+					
+					target.position.set(intersects[0].point.x, intersects[0].point.y, intersects[0].point.z);
+					scene.add(target);
+					
+				}
+				
+			}
+			
 			
 			function onMouseUp( event ) {
 
@@ -348,11 +559,11 @@ var container, stats;
 				
 				} else if(event.keyCode == 37) {
 					
-					vehDir = 0.02;
+					trackDir = 0.02;
 						
 				} else if(event.keyCode == 39) {
 					
-					vehDir = -0.02;
+					trackDir = -0.02;
 				
 				} else if(event.keyCode == 65) {
 					
@@ -381,6 +592,39 @@ var container, stats;
 			}
 
 			function render() {
+				
+				if(growTarget) {
+					
+					if(targetRadius < 3) { 
+						targetRadius += 0.05;
+						target.scale.set(targetRadius, targetRadius, 1);
+					}
+					
+				}
+				
+				if(sim) {
+					
+					if(simAngleFrames == 0) {
+						vehAngle += (-0.5 + Math.random()) * (Math.PI);
+						simAngleFrames = 500 + Math.random()*500;
+					} else {
+						simAngleFrames--;
+					}
+					
+					
+					if(simSpeedFrames > 0) {
+						
+						fwd += 0.01;
+						
+					} else {
+						
+						fwd = Math.random()*4;
+						simSpeedFrames = 500 + Math.random()*500;
+						
+					}
+					
+				}
+				
 				
 				vehAngle += vehDir;
 				
