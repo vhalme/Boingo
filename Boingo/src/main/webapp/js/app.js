@@ -79,6 +79,8 @@ var container, stats;
 			
 			var targetGeometry;
 			
+			var ctx;
+			
 			init();
 			animate();
 			
@@ -108,7 +110,7 @@ var container, stats;
 
 				floor = new THREE.Mesh( planeTesselated, matWire );
 				floor.rotation.x = - Math.PI / 2;
-				floor.position.set( 0, 0, 0 );
+				//floor.position.set( 0, 0, 0 );
 				scene.add( floor );
 
 				// Vehicle
@@ -177,7 +179,10 @@ var container, stats;
 				projector = new THREE.Projector();
 				
 				renderer = new THREE.CanvasRenderer();
+				renderer.setClearColorHex("0xffffff", 1);
 				renderer.setSize(canvasWidth, canvasHeight);
+				
+				
 				container.append( renderer.domElement );
 
 				stats = new Stats();
@@ -302,11 +307,13 @@ var container, stats;
 					
 					var offset = container.offset();
 					
-					var clientX = event.touches[0] != undefined ? event.touches[0].clientX : event.clientX;
-					var clientY = event.touches[0] != undefined ? event.touches[0].clientY : event.clientY;
+					//alert(event.originalEvent.touches[0].clientX);
 					
-					//var clientX = event.clientX;
-					//var clientY = event.clientY;
+					//var clientX = event.touches[0] != undefined ? event.touches[0].clientX : event.clientX;
+					//var clientY = event.touches[0] != undefined ? event.touches[0].clientY : event.clientY;
+					
+					var clientX = event.originalEvent.touches[0].clientX; //event.clientX;
+					var clientY = event.originalEvent.touches[0].clientY; //event.clientY;
 					
 					var mx = clientX - offset.left;
 					var my = clientY - offset.top;
@@ -404,7 +411,7 @@ var container, stats;
 					
 					//canvasMouseUp(e);
 					
-					/*
+					
 					var targetMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
 
 					target = new THREE.Mesh( targetGeometry, targetMaterial );
@@ -434,7 +441,7 @@ var container, stats;
 						scene.add(target);
 						
 					}
-					*/
+					
 				 
 				});
 				
@@ -463,6 +470,7 @@ var container, stats;
 				
 			}
 			
+			/*
 			function canvasMouseDown(event) {
 				
 				growTarget = true;
@@ -505,7 +513,7 @@ var container, stats;
 				}
 				
 			}
-			
+			*/
 			
 			function onMouseUp( event ) {
 
@@ -526,12 +534,12 @@ var container, stats;
 				
 				} else if(event.keyCode == 37) {
 					
-					vehDir = 0;
+					trackDir = 0;
 					
 					
 				} else if(event.keyCode == 39) {
 					
-					vehDir = 0;
+					trackDir = 0;
 					
 					
 				} else if(event.keyCode == 65) {
@@ -602,6 +610,7 @@ var container, stats;
 					
 				}
 				
+				
 				if(sim) {
 					
 					if(simAngleFrames == 0) {
@@ -624,7 +633,6 @@ var container, stats;
 					}
 					
 				}
-				
 				
 				vehAngle += vehDir;
 				
@@ -703,6 +711,7 @@ var container, stats;
 						floor.position.x += trackCos*100;
 						floor.position.z -= trackSin*100;
 					}
+					
 				}
 				
 				if(axisRem2 < 0) {
@@ -717,16 +726,20 @@ var container, stats;
 					
 					vehicle.position.x = vPosX;
 					vehicle.position.z = vPosZ;			
-				
+					
+					var camPosX, camPosY, camPosZ;
+					
 					if(viewMode == 0) {
-						camera.position.x = vehicle.position.x + (dx*150);
-						camera.position.z = vehicle.position.z + (dz*150);
+						camPosX = vehicle.position.x + (dx*150);
+						camPosY = 1000;
+						camPosZ = vehicle.position.z + (dz*150);
 					} else {
-						camera.position.x = vehicle.position.x - (dx*150);
-						camera.position.z = vehicle.position.z - (dz*150);
+						camPosX = vehicle.position.x - (dx*150);
+						camPosY = 60;
+						camPosZ = vehicle.position.z - (dz*150);
 					}
 					
-					
+					camera.position.set(camPosX, camPosY, camPosZ);
 					
 					if(viewMode == 0) {
 						camera.target.x = camera.position.x;
@@ -739,6 +752,7 @@ var container, stats;
 					}
 					
 					camera.lookAt(camera.target);
+					
 				
 				}
 				
