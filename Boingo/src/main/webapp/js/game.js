@@ -28,15 +28,17 @@ function setUpPage() {
 
 function setUpObjects() {
 	
-	floor = createFloor();
-	floor.mesh.rotation.x = -Math.PI / 2;
+	//floor = new app.Floor;
+	floorMesh = floor.get('mesh');
+	floorMesh.rotation.x = -Math.PI / 2;
 	
-	scene.add(floor.mesh);
+	scene.add(floorMesh);
 	
-	vehicle = createVehicle();
-	vehicle.mesh.position.set(0, 30, 0);
+	vehicle = new app.Vehicle;
+	vehicleMesh = vehicle.get('mesh');
+	vehicleMesh.position.set(0, 30, 0);
 	
-	scene.add(vehicle.mesh);
+	scene.add(vehicleMesh);
 
 }
 
@@ -226,8 +228,9 @@ function setUpControls() {
 
 			growTarget = true;
 				
-			target = createTarget();
-			target.mesh.rotation.x = Math.PI / 2;
+			target = new app.Target;
+			targetMesh = target.get('mesh');
+			targetMesh.rotation.x = Math.PI / 2;
 
 			var offset = container.offset();
 
@@ -250,13 +253,13 @@ function setUpControls() {
 
 			if(intersects.length > 0) {
 
-				target.mesh.position.set(
+				targetMesh.position.set(
 					intersects[0].point.x,
 					intersects[0].point.y, 
 					intersects[0].point.z
 				);
 				
-				scene.add(target.mesh);
+				scene.add(targetMesh);
 
 			}
 
@@ -287,8 +290,9 @@ function setUpControls() {
 
 			growTarget = true;
 				
-			target = createTarget();
-			target.mesh.rotation.x = Math.PI / 2;
+			target = new app.Target;
+			targetMesh = target.get('mesh');
+			targetMesh.rotation.x = Math.PI / 2;
 
 			var offset = container.offset();
 
@@ -311,13 +315,13 @@ function setUpControls() {
 
 			if(intersects.length > 0) {
 
-				target.mesh.position.set(
+				targetMesh.position.set(
 					intersects[0].point.x,
 					intersects[0].point.y, 
 					intersects[0].point.z
 				);
 				
-				scene.add(target.mesh);
+				scene.add(targetMesh);
 
 			}
 
@@ -470,17 +474,17 @@ function render() {
 	var dz = -Math.cos(vehAngle);
 	var dx = -Math.sin(vehAngle);
 
-	vehicle.mesh.rotation.y = vehAngle;
+	vehicleMesh.rotation.y = vehAngle;
 
-	var vPosX = vehicle.mesh.position.x + dx * fwd;
-	var vPosZ = vehicle.mesh.position.z + dz * fwd;
+	var vPosX = vehicleMesh.position.x + dx * fwd;
+	var vPosZ = vehicleMesh.position.z + dz * fwd;
 
-	var vdx1 = vPosX - floor.mesh.position.x;
-	var vdz1 = vPosZ - floor.mesh.position.z;
+	var vdx1 = vPosX - floorMesh.position.x;
+	var vdz1 = vPosZ - floorMesh.position.z;
 	var vd1 = (Math.sqrt(vdx1 * vdx1 + vdz1 * vdz1));
 
-	var vdx2 = vPosX - floor.mesh.position.x;
-	var vdz2 = vPosZ - floor.mesh.position.z;
+	var vdx2 = vPosX - floorMesh.position.x;
+	var vdz2 = vPosZ - floorMesh.position.z;
 	var vd2 = (Math.sqrt(vdx2 * vdx2 + vdz2 * vdz2));
 
 	var mTopX = Math.sin(newTrackAngle - Math.PI * (1 / 2)) * 600;
@@ -515,21 +519,21 @@ function render() {
 
 	var axisRem2 = 180 - Math.abs(shortAxis2);
 
-	meterContainer.html('(' + Math.round(vehicle.mesh.position.z) + ','
-			+ Math.round(vehicle.mesh.position.x) + '); ' + '('
+	meterContainer.html('(' + Math.round(vehicleMesh.position.z) + ','
+			+ Math.round(vehicleMesh.position.x) + '); ' + '('
 			+ Math.round(camera.position.z) + ','
 			+ Math.round(camera.position.x) + '); ' + '('
-			+ Math.round(floor.mesh.position.z) + ',' + Math.round(floor.mesh.position.x)
+			+ Math.round(floorMesh.position.z) + ',' + Math.round(floorMesh.position.x)
 			+ '); ' + '(' + trackSin + ',' + trackCos + ', ' + distTop + '); ');
 
 	if (axisRem < 400) {
 
 		if (distTop < 600) {
-			floor.mesh.position.x -= trackCos * 100;
-			floor.mesh.position.z += trackSin * 100;
+			floorMesh.position.x -= trackCos * 100;
+			floorMesh.position.z += trackSin * 100;
 		} else {
-			floor.mesh.position.x += trackCos * 100;
-			floor.mesh.position.z -= trackSin * 100;
+			floorMesh.position.x += trackCos * 100;
+			floorMesh.position.z -= trackSin * 100;
 		}
 
 	}
@@ -542,21 +546,21 @@ function render() {
 	} else {
 
 		trackAngle = newTrackAngle;
-		floor.mesh.rotation.z = trackAngle;
+		floorMesh.rotation.z = trackAngle;
 
-		vehicle.mesh.position.x = vPosX;
-		vehicle.mesh.position.z = vPosZ;
+		vehicleMesh.position.x = vPosX;
+		vehicleMesh.position.z = vPosZ;
 
 		var camPosX, camPosY, camPosZ;
 
 		if (viewMode == 0) {
-			camPosX = vehicle.mesh.position.x + (dx * 150);
+			camPosX = vehicleMesh.position.x + (dx * 150);
 			camPosY = 1000;
-			camPosZ = vehicle.mesh.position.z + (dz * 150);
+			camPosZ = vehicleMesh.position.z + (dz * 150);
 		} else {
-			camPosX = vehicle.mesh.position.x - (dx * 150);
+			camPosX = vehicleMesh.position.x - (dx * 150);
 			camPosY = 60;
-			camPosZ = vehicle.mesh.position.z - (dz * 150);
+			camPosZ = vehicleMesh.position.z - (dz * 150);
 		}
 
 		camera.position.set(camPosX, camPosY, camPosZ);
@@ -564,11 +568,11 @@ function render() {
 		if (viewMode == 0) {
 			camera.target.x = camera.position.x;
 			camera.target.z = camera.position.z;
-			camera.target.y = vehicle.mesh.position.y;
+			camera.target.y = vehicleMesh.position.y;
 		} else {
-			camera.target.x = vehicle.mesh.position.x;
-			camera.target.z = vehicle.mesh.position.z;
-			camera.target.y = vehicle.mesh.position.y + 10;
+			camera.target.x = vehicleMesh.position.x;
+			camera.target.z = vehicleMesh.position.z;
+			camera.target.y = vehicleMesh.position.y + 10;
 		}
 
 		camera.lookAt(camera.target);

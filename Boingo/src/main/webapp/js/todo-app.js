@@ -95,7 +95,7 @@ var ENTER_KEY = 13;
 
 $(function() {
 	
-	alert("create app");
+	alert("new app");
 	// Kick things off by creating the **App**.
 	new app.AppView();
 
