@@ -28,23 +28,24 @@ $(function( $ ) {
 		
 		setUpPage: function() {
 			
-			container = $('#canvasContainer');
-
 			canvasWidth = this.$el.width();
 			canvasHeight = $(document).height() - 70;
 
 			meterContainer = $('#meterContainer');
 		
-			renderer = new THREE.CanvasRenderer();
+			var renderer = new THREE.CanvasRenderer();
 			renderer.setClearColorHex("0xffffff", 1);
 			renderer.setSize(canvasWidth, canvasHeight);
-
 			this.$el.append(renderer.domElement);
-		
-			stats = new Stats();
+			
+			this.renderer = renderer;
+			
+			var stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
 			this.$el.append(stats.domElement);
+			
+			this.stats = stats;
 		
 		},
 		
@@ -54,27 +55,26 @@ $(function( $ ) {
 			floorMesh = floor.get('mesh');
 			floorMesh.rotation.x = -Math.PI / 2;
 			
-			scene.add(floorMesh);
+			this.scene.add(floorMesh);
 			
 			vehicle = new app.Vehicle();
 			vehicleMesh = vehicle.get('mesh');
 			vehicleMesh.position.set(0, 30, 0);
 			
-			scene.add(vehicleMesh);
+			this.scene.add(vehicleMesh);
 
 		},
 
 
 		setUpScene: function() {
 			
-			camera = new THREE.PerspectiveCamera(25, canvasWidth / canvasHeight, 1,
-					10000);
-			camera.target = new THREE.Vector3(0, 0, 0);
-			camera.position.set(0, 1000, 0);
-
-			scene = new THREE.Scene();
-
-			projector = new THREE.Projector();
+			this.camera = new THREE.PerspectiveCamera(25, canvasWidth / canvasHeight, 1, 10000);
+			this.camera.target = new THREE.Vector3(0, 0, 0);
+			this.camera.position.set(0, 1000, 0);
+			
+			this.scene = new THREE.Scene();
+			
+			this.projector = new THREE.Projector();
 			
 		},
 		
@@ -93,10 +93,10 @@ $(function( $ ) {
 				function(event) {
 
 					if (view.viewMode == 0) {
-						camera.position.set(0, 60, 0);
+						view.camera.position.set(0, 60, 0);
 						view.viewMode = 1;
 					} else if (view.viewMode == 1) {
-						camera.position.set(0, 1000, 0);
+						view.camera.position.set(0, 1000, 0);
 						view.viewMode = 0;
 					}
 
@@ -110,10 +110,10 @@ $(function( $ ) {
 				function(event) {
 
 					if (view.viewMode == 0) {
-						camera.position.set(0, 60, 0);
+						view.camera.position.set(0, 60, 0);
 						view.viewMode = 1;
 					} else if (view.viewMode == 1) {
-						camera.position.set(0, 1000, 0);
+						view.camera.position.set(0, 1000, 0);
 						view.viewMode = 0;
 					}
 
@@ -323,12 +323,12 @@ $(function( $ ) {
 		clickCanvasAt: function(x, y) {
 			
 			var vector = new THREE.Vector3(x, y, 0.5);
-			projector.unprojectVector(vector, camera);
+			this.projector.unprojectVector(vector, this.camera);
 
-			var ray = new THREE.Ray(camera.position, vector.subSelf(
-			camera.position).normalize());
+			var ray = 
+				new THREE.Ray(this.camera.position, vector.subSelf(this.camera.position).normalize());
 
-			var intersects = ray.intersectObjects(scene.children);
+			var intersects = ray.intersectObjects(this.scene.children);
 
 			if(intersects.length > 0) {
 				
@@ -342,7 +342,7 @@ $(function( $ ) {
 					intersects[0].point.z
 				);
 				
-				scene.add(targetMesh);
+				this.scene.add(targetMesh);
 				
 				growTarget = true;
 
@@ -402,7 +402,7 @@ $(function( $ ) {
 			
 			this.render();
 			
-			stats.update();
+			this.stats.update();
 
 		},
 		
@@ -465,7 +465,9 @@ $(function( $ ) {
 			var shortAxis2 = Math.cos(dAngle2) * vd2;
 
 			var axisRem2 = 180 - Math.abs(shortAxis2);
-
+			
+			var camera = this.camera;
+			
 			meterContainer.html('(' + Math.round(vehicleMesh.position.z) + ','
 					+ Math.round(vehicleMesh.position.x) + '); ' + '('
 					+ Math.round(camera.position.z) + ','
@@ -526,7 +528,7 @@ $(function( $ ) {
 
 			}
 
-			renderer.render(scene, camera);
+			this.renderer.render(this.scene, camera);
 
 		}
 		
