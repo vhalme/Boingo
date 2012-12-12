@@ -4,9 +4,9 @@ $(function( $ ) {
 	
 	'use strict';
 	
-	app.AppView = Backbone.View.extend({
-
-		el: '#todoapp',
+	app.CanvasView = Backbone.View.extend({
+		
+		el: '#canvasContainer',
 		
 		viewMode: 0,
 		
@@ -30,7 +30,7 @@ $(function( $ ) {
 			
 			container = $('#canvasContainer');
 
-			canvasWidth = container.width();
+			canvasWidth = this.$el.width();
 			canvasHeight = $(document).height() - 70;
 
 			meterContainer = $('#meterContainer');
@@ -39,24 +39,24 @@ $(function( $ ) {
 			renderer.setClearColorHex("0xffffff", 1);
 			renderer.setSize(canvasWidth, canvasHeight);
 
-			container.append(renderer.domElement);
+			this.$el.append(renderer.domElement);
 		
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
-			container.append(stats.domElement);
+			this.$el.append(stats.domElement);
 		
 		},
 		
 		setUpObjects: function() {
 			
-			floor = new app.Floor;
+			floor = new app.Floor();
 			floorMesh = floor.get('mesh');
 			floorMesh.rotation.x = -Math.PI / 2;
 			
 			scene.add(floorMesh);
 			
-			vehicle = new app.Vehicle;
+			vehicle = new app.Vehicle();
 			vehicleMesh = vehicle.get('mesh');
 			vehicleMesh.position.set(0, 30, 0);
 			
@@ -250,14 +250,8 @@ $(function( $ ) {
 
 					event.preventDefault();
 
-					growTarget = true;
-						
-					target = new app.Target;
-					targetMesh = target.get('mesh');
-					targetMesh.rotation.x = Math.PI / 2;
-
-					var offset = container.offset();
-
+					var offset = view.$el.offset();
+					
 					var clientX = event.originalEvent.touches[0].clientX;
 					var clientY = event.originalEvent.touches[0].clientY;
 
@@ -267,25 +261,7 @@ $(function( $ ) {
 					mouse.x = (mx / canvasWidth) * 2 - 1;
 					mouse.y = -(my / canvasHeight) * 2 + 1;
 
-					var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-					projector.unprojectVector(vector, camera);
-
-					var ray = new THREE.Ray(camera.position, vector.subSelf(
-					camera.position).normalize());
-
-					var intersects = ray.intersectObjects(scene.children);
-
-					if(intersects.length > 0) {
-
-						targetMesh.position.set(
-							intersects[0].point.x,
-							intersects[0].point.y, 
-							intersects[0].point.z
-						);
-						
-						scene.add(targetMesh);
-
-					}
+					this.clickCanvasAt(mouse.x, mouse.y);
 
 				}
 			
@@ -311,14 +287,8 @@ $(function( $ ) {
 				function(event) {
 
 					event.preventDefault();
-
-					growTarget = true;
-						
-					target = new app.Target;
-					targetMesh = target.get('mesh');
-					targetMesh.rotation.x = Math.PI / 2;
-
-					var offset = container.offset();
+					
+					var offset = view.$el.offset();
 
 					var clientX = event.clientX;
 					var clientY = event.clientY;
@@ -328,27 +298,10 @@ $(function( $ ) {
 
 					mouse.x = (mx / canvasWidth) * 2 - 1;
 					mouse.y = -(my / canvasHeight) * 2 + 1;
-
-					var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-					projector.unprojectVector(vector, camera);
-
-					var ray = new THREE.Ray(camera.position, vector.subSelf(
-					camera.position).normalize());
-
-					var intersects = ray.intersectObjects(scene.children);
-
-					if(intersects.length > 0) {
-
-						targetMesh.position.set(
-							intersects[0].point.x,
-							intersects[0].point.y, 
-							intersects[0].point.z
-						);
-						
-						scene.add(targetMesh);
-
-					}
-
+					
+					view.clickCanvasAt(mouse.x, mouse.y);
+					
+					
 				}
 				
 			);
@@ -367,13 +320,44 @@ $(function( $ ) {
 		},
 		
 		
+		clickCanvasAt: function(x, y) {
+			
+			var vector = new THREE.Vector3(x, y, 0.5);
+			projector.unprojectVector(vector, camera);
+
+			var ray = new THREE.Ray(camera.position, vector.subSelf(
+			camera.position).normalize());
+
+			var intersects = ray.intersectObjects(scene.children);
+
+			if(intersects.length > 0) {
+				
+				target = new app.Target();
+				targetMesh = target.get('mesh');
+				targetMesh.rotation.x = Math.PI / 2;
+				
+				targetMesh.position.set(
+					intersects[0].point.x,
+					intersects[0].point.y, 
+					intersects[0].point.z
+				);
+				
+				scene.add(targetMesh);
+				
+				growTarget = true;
+
+			}
+			
+		},
+		
+		
 		animateTargets: function() {
 			
 			if(growTarget) {
 
 				if (targetRadius < 3) {
 					targetRadius += 0.05;
-					target.mesh.scale.set(targetRadius, targetRadius, 1);
+					targetMesh.scale.set(targetRadius, targetRadius, 1);
 				}
 
 			}

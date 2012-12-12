@@ -132,6 +132,5 @@ var app = app || {};
 	
 	});
 	
-	alert("objects loaded");
 	
 }());
