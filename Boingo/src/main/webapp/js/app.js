@@ -36,7 +36,7 @@ var info;
 var fwd = 0;
 var meterContainer;
 
-var viewMode = 0;
+//var viewMode = 0;
 
 var canvasWidth, canvasHeight;
 
