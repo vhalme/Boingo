@@ -1,23 +1,9 @@
-var mouse = {
-	
-	x: 0,
-	y: 0
-	
-}, INTERSECTED;
-
-var growTarget = false;
-var targetRadius = 1;
-
 var sim = false;
 var simAngleFrames = 1000;
 var simSpeedFrames = 1000;
 
-var vehDir = 0, trackDir = 0;
-var vehAngle = Math.PI / 2, trackAngle = 0;
+var vehicle, vehicleMesh, track, trackMesh, target, targetMesh;
 
-var vehicle, vehicleMesh, floor, floorMesh, target, targetMesh;
-
-var fwd = 0;
 var meterContainer;
 
 var canvasWidth, canvasHeight;
@@ -71,6 +57,8 @@ var ENTER_KEY = 13;
 $(function() {
 	
 	// Kick things off by creating the **App**.
-	new app.CanvasView();
+	app.headerView = new app.HeaderView();
+	app.canvasView = new app.CanvasView();
+	app.controlsView = new app.ControlsView();
 
 });

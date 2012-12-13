@@ -42,7 +42,10 @@ var app = app || {};
 
 
 	app.Floor = app.SceneObject.extend({
-	
+		
+		angle: 0,
+		angleDelta: 0,
+		
 		initialize: function() {
 		
 			var planeTesselated = new THREE.PlaneGeometry(1200, 360, 12, 3);
@@ -66,7 +69,11 @@ var app = app || {};
 
 
 	app.Vehicle = app.SceneObject.extend({
-	
+		
+		angle: Math.PI / 2,
+		angleDelta: 0,
+		speed: 0,
+		
 		initialize: function() {
 	
 			var vehicleGeometry = new THREE.CubeGeometry(20, 10, 30);
@@ -95,6 +102,10 @@ var app = app || {};
 
 
 	app.Target = app.SceneObject.extend({
+		
+		growing: false,
+		
+		scale: 1,
 	
 		initialize: function() {
 		
@@ -127,6 +138,15 @@ var app = app || {};
 			this.set('mesh', targetMesh);
 			this.set('geometry', targetGeometry);
 			this.set('material', targetMaterial);
+		
+		},
+		
+		grow: function(scaleDelta) {
+			
+			var mesh = this.get('mesh');
+			
+			this.scale += scaleDelta;
+			mesh.scale.set(this.scale, this.scale, 1);
 		
 		}
 	

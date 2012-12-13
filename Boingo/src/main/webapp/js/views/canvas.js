@@ -10,9 +10,23 @@ $(function( $ ) {
 		
 		viewMode: 0,
 		
+		scene: undefined,
+		
+		camera: undefined,
+		
+		projector: undefined,
+		
+		renderer: undefined,
+		
+		canvasWidth: undefined,
+		
+		canvasHeight: undefined,
+		
+		
+		
 		initialize: function() {
 			
-			_.bindAll(this, 'animate');
+			_.bindAll(this, 'animate', 'resizeCanvas');
 			
 			this.setUpPage();
 			
@@ -28,14 +42,14 @@ $(function( $ ) {
 		
 		setUpPage: function() {
 			
-			canvasWidth = this.$el.width();
-			canvasHeight = $(document).height() - 70;
+			this.canvasWidth = this.$el.width();
+			this.canvasHeight = $(document).height() - 70;
 
 			meterContainer = $('#meterContainer');
 		
 			var renderer = new THREE.CanvasRenderer();
 			renderer.setClearColorHex("0xffffff", 1);
-			renderer.setSize(canvasWidth, canvasHeight);
+			renderer.setSize(this.canvasWidth, this.canvasHeight);
 			this.$el.append(renderer.domElement);
 			
 			this.renderer = renderer;
@@ -51,11 +65,11 @@ $(function( $ ) {
 		
 		setUpObjects: function() {
 			
-			floor = new app.Floor();
-			floorMesh = floor.get('mesh');
-			floorMesh.rotation.x = -Math.PI / 2;
+			track = new app.Floor();
+			trackMesh = track.get('mesh');
+			trackMesh.rotation.x = -Math.PI / 2;
 			
-			this.scene.add(floorMesh);
+			this.scene.add(trackMesh);
 			
 			vehicle = new app.Vehicle();
 			vehicleMesh = vehicle.get('mesh');
@@ -68,7 +82,7 @@ $(function( $ ) {
 
 		setUpScene: function() {
 			
-			this.camera = new THREE.PerspectiveCamera(25, canvasWidth / canvasHeight, 1, 10000);
+			this.camera = new THREE.PerspectiveCamera(25, this.canvasWidth / this.canvasHeight, 1, 10000);
 			this.camera.target = new THREE.Vector3(0, 0, 0);
 			this.camera.position.set(0, 1000, 0);
 			
@@ -79,171 +93,65 @@ $(function( $ ) {
 		},
 		
 		
+		events: {
+			
+			'mousedown': 'canvasMouseDown',
+            'touchstart': 'canvasTouchStart',
+            'mouseup': 'canvasMouseUp',
+            'touchend': 'canvasMouseUp',
+			
+		},
+		
+		
+		canvasTouchStart: function(event) {
+			
+			event.preventDefault();	
+			this.canvasMouseDown(event, true);
+		
+		},
+		
+		canvasMouseDown: function(event, isTouch) {
+			
+			event.preventDefault();
+			
+			var offset = this.$el.offset();
+			
+			var clientX, clientY;
+			
+			if(isTouch) {
+				clientX = event.originalEvent.touches[0].clientX;
+				clientY = event.originalEvent.touches[0].clientY;
+			} else {
+				clientX = event.clientX;
+				clientY = event.clientY;
+			}
+			
+			var mx = clientX - offset.left;
+			var my = clientY - offset.top;
+
+			var x = (mx / this.canvasWidth) * 2 - 1;
+			var y = -(my / this.canvasHeight) * 2 + 1;
+			
+			this.clickCanvasAt(x, y);
+			
+		},
+		
+		canvasMouseUp: function() {
+			
+			event.preventDefault();
+			
+			target.growing = false;
+			
+		},
+		
+		
 		setUpControls: function() {
 			
-			document.addEventListener('keyup', onKeyUp, false);
-			document.addEventListener('keydown', onKeyDown, false);
+			window.addEventListener('resize', this.resizeCanvas, false);
 			
-			window.addEventListener('resize', onWindowResize, false);
-			
+			/*
 			var view = this;
 			
-			$("#view").bind("touchend", 
-					
-				function(event) {
-
-					if (view.viewMode == 0) {
-						view.camera.position.set(0, 60, 0);
-						view.viewMode = 1;
-					} else if (view.viewMode == 1) {
-						view.camera.position.set(0, 1000, 0);
-						view.viewMode = 0;
-					}
-
-				}
-				
-			);
-
-			
-			$("#view").click(
-				
-				function(event) {
-
-					if (view.viewMode == 0) {
-						view.camera.position.set(0, 60, 0);
-						view.viewMode = 1;
-					} else if (view.viewMode == 1) {
-						view.camera.position.set(0, 1000, 0);
-						view.viewMode = 0;
-					}
-
-				}
-				
-			);
-			
-
-			$("#run").bind("touchstart", 
-			
-				function(event) {
-					event.keyCode = 38;
-					onKeyDown(event);
-				}
-			
-			);
-			
-
-			$("#run").bind("touchend", 
-			
-				function(event) {
-					event.keyCode = 38;
-					onKeyUp(event);
-				}
-			
-			);
-
-			
-			$("#right").bind("touchstart", 
-				
-				function(event) {
-					event.keyCode = 39;
-					onKeyDown(event);
-				}
-				
-			);
-			
-			
-			$("#right").bind("touchend", 
-			
-				function(event) {
-					event.keyCode = 39;
-					onKeyUp(event);
-				}
-				
-			);
-
-			
-			$("#left").bind("touchstart", 
-			
-				function(event) {
-					event.keyCode = 37;
-					onKeyDown(event);
-				}
-			
-			);
-
-			
-			$("#left").bind("touchend", 
-			
-				function(event) {
-					event.keyCode = 37;
-					onKeyUp(event);
-				}
-			
-			);
-			
-			
-			$("#run").mousedown(
-				
-				function() {
-					onKeyDown({ 
-						keyCode : 38,
-						preventDefault : function() {}
-					})
-				}
-				
-			);
-			
-			
-			$("#run").mouseup(
-				
-				function() {
-					onKeyUp({
-						keyCode : 38,
-						preventDefault : function() {}
-					})
-				}
-				
-			);
-			
-
-			$("#sim").mouseup(
-				
-				function() {
-					
-					event.preventDefault();
-					
-					if (sim == true) {
-						sim = false;
-						$(this).css("background", "#ffffff");
-					} else {
-						sim = true;
-						$(this).css("background", "#ff0000");
-					}
-				
-				}
-				
-			);
-			
-
-			$("#sim").bind("touchend", 
-			
-				function(event) {
-
-					event.preventDefault();
-
-					if (sim == true) {
-						sim = false;
-						$(this).css("background", "#ffffff");
-					} else {
-						sim = true;
-						$(this).css("background", "#ff0000");
-					}
-
-				}
-				
-			);
-			
-
 			$("#canvasContainer").bind("touchstart",
 			
 				function(event) {
@@ -258,10 +166,10 @@ $(function( $ ) {
 					var mx = clientX - offset.left;
 					var my = clientY - offset.top;
 
-					mouse.x = (mx / canvasWidth) * 2 - 1;
-					mouse.y = -(my / canvasHeight) * 2 + 1;
+					var x = (mx / view.canvasWidth) * 2 - 1;
+					var y = -(my / view.canvasHeight) * 2 + 1;
 
-					this.clickCanvasAt(mouse.x, mouse.y);
+					this.clickCanvasAt(x, y);
 
 				}
 			
@@ -273,9 +181,8 @@ $(function( $ ) {
 				function(event) {
 
 					event.preventDefault();
-
-					growTarget = false;
-					targetRadius = 1;
+					
+					target.growing = false;
 
 				}
 				
@@ -285,7 +192,7 @@ $(function( $ ) {
 			$("#canvasContainer").bind("mousedown",
 			
 				function(event) {
-
+					
 					event.preventDefault();
 					
 					var offset = view.$el.offset();
@@ -296,10 +203,10 @@ $(function( $ ) {
 					var mx = clientX - offset.left;
 					var my = clientY - offset.top;
 
-					mouse.x = (mx / canvasWidth) * 2 - 1;
-					mouse.y = -(my / canvasHeight) * 2 + 1;
+					var x = (mx / view.canvasWidth) * 2 - 1;
+					var y = -(my / view.canvasHeight) * 2 + 1;
 					
-					view.clickCanvasAt(mouse.x, mouse.y);
+					view.clickCanvasAt(x, y);
 					
 					
 				}
@@ -310,12 +217,13 @@ $(function( $ ) {
 			$("#canvasContainer").bind("mouseup", 
 			
 				function(event) {
-					growTarget = false;
-					targetRadius = 1;
+				
+					target.growing = false;
+				
 				}
 				
 			);
-			
+			*/
 			
 		},
 		
@@ -344,7 +252,7 @@ $(function( $ ) {
 				
 				this.scene.add(targetMesh);
 				
-				growTarget = true;
+				target.growing = true;
 
 			}
 			
@@ -353,11 +261,12 @@ $(function( $ ) {
 		
 		animateTargets: function() {
 			
-			if(growTarget) {
+			if(target && target.growing) {
 
-				if (targetRadius < 3) {
-					targetRadius += 0.05;
-					targetMesh.scale.set(targetRadius, targetRadius, 1);
+				if (target.scale < 3) {
+					target.grow(0.05);
+				} else {
+					target.growing = false;
 				}
 
 			}
@@ -371,7 +280,7 @@ $(function( $ ) {
 
 				if (simAngleFrames == 0) {
 					
-					vehAngle += (-0.5 + Math.random()) * (Math.PI);
+					vehicle.angle += (-0.5 + Math.random()) * (Math.PI);
 					simAngleFrames = 500 + Math.random() * 500;
 					
 				} else {
@@ -382,11 +291,11 @@ $(function( $ ) {
 
 				if (simSpeedFrames > 0) {
 
-					fwd += 0.01;
+					vehicle.speed += 0.01;
 
 				} else {
 
-					fwd = Math.random() * 4;
+					vehicle.speed = Math.random() * 4;
 					simSpeedFrames = 500 + Math.random() * 500;
 
 				}
@@ -413,25 +322,24 @@ $(function( $ ) {
 			
 			this.animateTargets();
 			
+			var newTrackAngle = track.angle + track.angleDelta;
 			
-			var newTrackAngle = trackAngle + trackDir;
-			
-			vehAngle += vehDir;
+			vehicle.angle += vehicle.angleDelta;
 
-			var dz = -Math.cos(vehAngle);
-			var dx = -Math.sin(vehAngle);
+			var dz = -Math.cos(vehicle.angle);
+			var dx = -Math.sin(vehicle.angle);
 
-			vehicleMesh.rotation.y = vehAngle;
+			vehicleMesh.rotation.y = vehicle.angle;
 
-			var vPosX = vehicleMesh.position.x + dx * fwd;
-			var vPosZ = vehicleMesh.position.z + dz * fwd;
+			var vPosX = vehicleMesh.position.x + dx * vehicle.speed;
+			var vPosZ = vehicleMesh.position.z + dz * vehicle.speed;
 
-			var vdx1 = vPosX - floorMesh.position.x;
-			var vdz1 = vPosZ - floorMesh.position.z;
+			var vdx1 = vPosX - trackMesh.position.x;
+			var vdz1 = vPosZ - trackMesh.position.z;
 			var vd1 = (Math.sqrt(vdx1 * vdx1 + vdz1 * vdz1));
 
-			var vdx2 = vPosX - floorMesh.position.x;
-			var vdz2 = vPosZ - floorMesh.position.z;
+			var vdx2 = vPosX - trackMesh.position.x;
+			var vdz2 = vPosZ - trackMesh.position.z;
 			var vd2 = (Math.sqrt(vdx2 * vdx2 + vdz2 * vdz2));
 
 			var mTopX = Math.sin(newTrackAngle - Math.PI * (1 / 2)) * 600;
@@ -468,34 +376,34 @@ $(function( $ ) {
 			
 			var camera = this.camera;
 			
-			meterContainer.html('(' + Math.round(vehicleMesh.position.z) + ','
+			app.headerView.setText('(' + Math.round(vehicleMesh.position.z) + ','
 					+ Math.round(vehicleMesh.position.x) + '); ' + '('
 					+ Math.round(camera.position.z) + ','
 					+ Math.round(camera.position.x) + '); ' + '('
-					+ Math.round(floorMesh.position.z) + ',' + Math.round(floorMesh.position.x)
+					+ Math.round(trackMesh.position.z) + ',' + Math.round(trackMesh.position.x)
 					+ '); ' + '(' + trackSin + ',' + trackCos + ', ' + distTop + '); ');
 
 			if (axisRem < 400) {
 
 				if (distTop < 600) {
-					floorMesh.position.x -= trackCos * 100;
-					floorMesh.position.z += trackSin * 100;
+					trackMesh.position.x -= trackCos * 100;
+					trackMesh.position.z += trackSin * 100;
 				} else {
-					floorMesh.position.x += trackCos * 100;
-					floorMesh.position.z -= trackSin * 100;
+					trackMesh.position.x += trackCos * 100;
+					trackMesh.position.z -= trackSin * 100;
 				}
 
 			}
 
 			if (axisRem2 < 0) {
 
-				fwd = 0;
-				trackDir = 0;
+				vehicle.speed = 0;
+				track.angleDelta = 0;
 
 			} else {
 
-				trackAngle = newTrackAngle;
-				floorMesh.rotation.z = trackAngle;
+				track.angle = newTrackAngle;
+				trackMesh.rotation.z = track.angle;
 
 				vehicleMesh.position.x = vPosX;
 				vehicleMesh.position.z = vPosZ;
@@ -530,6 +438,32 @@ $(function( $ ) {
 
 			this.renderer.render(this.scene, camera);
 
+		},
+		
+		
+		resizeCanvas: function() {
+			
+			var canvasWidth = this.$el.width();
+			var canvasHeight = $(document).height() - 70;
+			
+			this.canvasWidth = canvasWidth;
+			this.canvasHeight = canvasHeight;
+			
+			this.camera.aspect = canvasWidth / canvasHeight;
+				
+			if (canvasWidth > canvasHeight) {
+				this.camera.position.set(0, 60, 0);
+				this.viewMode = 1;
+			} else {
+				this.camera.position.set(0, 1000, 0);
+				this.viewMode = 0;
+			}
+
+			this.camera.updateProjectionMatrix();
+
+			this.renderer.setSize(canvasWidth, canvasHeight);
+
+			
 		}
 		
 		
