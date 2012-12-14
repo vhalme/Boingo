@@ -11,8 +11,6 @@ $(function( $ ) {
 		initialize: function() {
 			
 			//_.bindAll(this, 'animate', 'resizeCanvas');
-			
-			this.setUpControls();
 		
 		},
 		
@@ -42,45 +40,39 @@ $(function( $ ) {
         
         runButtonDown: function(event) {
         	event.preventDefault();
-        	moveVehicle(true);
+        	app.game.moveVehicle(true);
         },
         
         runButtonUp: function(event) {
         	event.preventDefault();
-        	moveVehicle(false);
+        	app.game.moveVehicle(false);
         },
         
         leftButtonDown: function(event) {
         	event.preventDefault();
-        	turnTrack("left", true);
+        	app.game.turnTrack("left", true);
         },
         
         leftButtonUp: function(event) {
         	event.preventDefault();
-        	turnTrack("left", false);
+        	app.game.turnTrack("left", false);
         },
         
         rightButtonDown: function(event) {
         	event.preventDefault();
-        	turnTrack("right", true);
+        	app.game.turnTrack("right", true);
         },
         
         rightButtonUp: function(event) {
         	event.preventDefault();
-        	turnTrack("right", false);
+        	app.game.turnTrack("right", false);
         },
         
         simButtonClick: function(event) {
         	
         	event.preventDefault();
 			
-			if(sim == true) {
-				sim = false;
-				$("#sim").css('background', "#ffffff");
-			} else {
-				sim = true;
-				$("#sim").css('background', "#ff0000");
-			}
+			app.game.toggleSimulation();
         	
         },
         
@@ -96,115 +88,7 @@ $(function( $ ) {
 				view.viewMode = 0;
 			}
         	
-        },
-        
-        
-		setUpControls: function() {
-			
-			document.addEventListener('keyup', onKeyUp, false);
-			document.addEventListener('keydown', onKeyDown, false);
-			
-			/*
-			var view = app.canvasView;
-			
-			$("#view").bind("touchend", 
-					
-				function(event) {
-
-					if (view.viewMode == 0) {
-						view.camera.position.set(0, 60, 0);
-						view.viewMode = 1;
-					} else if (view.viewMode == 1) {
-						view.camera.position.set(0, 1000, 0);
-						view.viewMode = 0;
-					}
-
-				}
-				
-			);
-			
-
-			$("#run").bind("touchstart", 
-			
-				function(event) {
-					event.keyCode = 38;
-					onKeyDown(event);
-				}
-			
-			);
-			
-
-			$("#run").bind("touchend", 
-			
-				function(event) {
-					event.keyCode = 38;
-					onKeyUp(event);
-				}
-			
-			);
-
-			
-			$("#right").bind("touchstart", 
-				
-				function(event) {
-					event.keyCode = 39;
-					onKeyDown(event);
-				}
-				
-			);
-			
-			
-			$("#right").bind("touchend", 
-			
-				function(event) {
-					event.keyCode = 39;
-					onKeyUp(event);
-				}
-				
-			);
-
-			
-			$("#left").bind("touchstart", 
-			
-				function(event) {
-					event.keyCode = 37;
-					onKeyDown(event);
-				}
-			
-			);
-
-			
-			$("#left").bind("touchend", 
-			
-				function(event) {
-					event.keyCode = 37;
-					onKeyUp(event);
-				}
-			
-			);
-			
-			
-			$("#sim").bind("touchend", 
-			
-				function(event) {
-
-					event.preventDefault();
-
-					if (sim == true) {
-						sim = false;
-						$(this).css("background", "#ffffff");
-					} else {
-						sim = true;
-						$(this).css("background", "#ff0000");
-					}
-
-				}
-				
-			);
-			*/
-			
-			
-		}
+        }
 		
 		
 	});

@@ -1,13 +1,3 @@
-var sim = false;
-var simAngleFrames = 1000;
-var simSpeedFrames = 1000;
-
-var vehicle, vehicleMesh, track, trackMesh, target, targetMesh;
-
-var meterContainer;
-
-var canvasWidth, canvasHeight;
-
 var gpsOn = false;
 var lng, lat;
 
@@ -15,7 +5,7 @@ function initGps() {
 	
 	var watchId = navigator.geolocation.watchPosition(
 		
-		function(position) {  
+		function(position) {
 			
 			lat = position.coords.latitude;
 			lng = position.coords.longitude;
@@ -57,6 +47,10 @@ var ENTER_KEY = 13;
 $(function() {
 	
 	// Kick things off by creating the **App**.
+	
+	app.game = new app.GameModel();
+	
+	app.appView = new app.AppView();
 	app.headerView = new app.HeaderView();
 	app.canvasView = new app.CanvasView();
 	app.controlsView = new app.ControlsView();

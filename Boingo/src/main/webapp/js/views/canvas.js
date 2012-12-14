@@ -22,6 +22,11 @@ $(function( $ ) {
 		
 		canvasHeight: undefined,
 		
+		vehicleMesh: undefined,
+		
+		trackMesh: undefined,
+		
+		targetMesh: undefined,
 		
 		
 		initialize: function() {
@@ -44,9 +49,7 @@ $(function( $ ) {
 			
 			this.canvasWidth = this.$el.width();
 			this.canvasHeight = $(document).height() - 70;
-
-			meterContainer = $('#meterContainer');
-		
+			
 			var renderer = new THREE.CanvasRenderer();
 			renderer.setClearColorHex("0xffffff", 1);
 			renderer.setSize(this.canvasWidth, this.canvasHeight);
@@ -56,7 +59,7 @@ $(function( $ ) {
 			
 			var stats = new Stats();
 			stats.domElement.style.position = 'absolute';
-			stats.domElement.style.top = '0px';
+			stats.domElement.style.top = app.headerView.$el.height()+'px';
 			this.$el.append(stats.domElement);
 			
 			this.stats = stats;
@@ -65,15 +68,21 @@ $(function( $ ) {
 		
 		setUpObjects: function() {
 			
-			track = new app.Floor();
+			var track = new app.Floor();
 			trackMesh = track.get('mesh');
 			trackMesh.rotation.x = -Math.PI / 2;
 			
+			app.game.track = track;
+			this.trackMesh = trackMesh;
+			
 			this.scene.add(trackMesh);
 			
-			vehicle = new app.Vehicle();
-			vehicleMesh = vehicle.get('mesh');
+			var vehicle = new app.Vehicle();
+			var vehicleMesh = vehicle.get('mesh');
 			vehicleMesh.position.set(0, 30, 0);
+			
+			app.game.vehicle = vehicle;
+			this.vehicleMesh = vehicleMesh;
 			
 			this.scene.add(vehicleMesh);
 
@@ -98,7 +107,7 @@ $(function( $ ) {
 			'mousedown': 'canvasMouseDown',
             'touchstart': 'canvasTouchStart',
             'mouseup': 'canvasMouseUp',
-            'touchend': 'canvasMouseUp',
+            'touchend': 'canvasMouseUp'
 			
 		},
 		
@@ -149,82 +158,6 @@ $(function( $ ) {
 			
 			window.addEventListener('resize', this.resizeCanvas, false);
 			
-			/*
-			var view = this;
-			
-			$("#canvasContainer").bind("touchstart",
-			
-				function(event) {
-
-					event.preventDefault();
-
-					var offset = view.$el.offset();
-					
-					var clientX = event.originalEvent.touches[0].clientX;
-					var clientY = event.originalEvent.touches[0].clientY;
-
-					var mx = clientX - offset.left;
-					var my = clientY - offset.top;
-
-					var x = (mx / view.canvasWidth) * 2 - 1;
-					var y = -(my / view.canvasHeight) * 2 + 1;
-
-					this.clickCanvasAt(x, y);
-
-				}
-			
-			);
-			
-
-			$("#canvasContainer").bind("touchend", 
-			
-				function(event) {
-
-					event.preventDefault();
-					
-					target.growing = false;
-
-				}
-				
-			);
-				
-
-			$("#canvasContainer").bind("mousedown",
-			
-				function(event) {
-					
-					event.preventDefault();
-					
-					var offset = view.$el.offset();
-
-					var clientX = event.clientX;
-					var clientY = event.clientY;
-
-					var mx = clientX - offset.left;
-					var my = clientY - offset.top;
-
-					var x = (mx / view.canvasWidth) * 2 - 1;
-					var y = -(my / view.canvasHeight) * 2 + 1;
-					
-					view.clickCanvasAt(x, y);
-					
-					
-				}
-				
-			);
-			
-			
-			$("#canvasContainer").bind("mouseup", 
-			
-				function(event) {
-				
-					target.growing = false;
-				
-				}
-				
-			);
-			*/
-			
 		},
 		
 		
@@ -240,8 +173,10 @@ $(function( $ ) {
 
 			if(intersects.length > 0) {
 				
-				target = new app.Target();
-				targetMesh = target.get('mesh');
+				var target = new app.Target();
+				target.growing = true;
+				
+				var targetMesh = target.get('mesh');
 				targetMesh.rotation.x = Math.PI / 2;
 				
 				targetMesh.position.set(
@@ -250,9 +185,12 @@ $(function( $ ) {
 					intersects[0].point.z
 				);
 				
+				app.game.target = target;
+				this.targetMesh = targetMesh;
+				
 				this.scene.add(targetMesh);
 				
-				target.growing = true;
+				
 
 			}
 			
@@ -261,12 +199,12 @@ $(function( $ ) {
 		
 		animateTargets: function() {
 			
-			if(target && target.growing) {
+			if(app.game.target && app.game.target.growing) {
 
-				if (target.scale < 3) {
-					target.grow(0.05);
+				if (app.game.target.scale < 3) {
+					app.game.target.grow(0.05);
 				} else {
-					target.growing = false;
+					app.game.target.growing = false;
 				}
 
 			}
@@ -274,37 +212,6 @@ $(function( $ ) {
 		},
 
 
-		simulateMovement: function() {
-			
-			if(sim) {
-
-				if (simAngleFrames == 0) {
-					
-					vehicle.angle += (-0.5 + Math.random()) * (Math.PI);
-					simAngleFrames = 500 + Math.random() * 500;
-					
-				} else {
-					
-					simAngleFrames--;
-					
-				}
-
-				if (simSpeedFrames > 0) {
-
-					vehicle.speed += 0.01;
-
-				} else {
-
-					vehicle.speed = Math.random() * 4;
-					simSpeedFrames = 500 + Math.random() * 500;
-
-				}
-
-			}
-			
-		},
-		
-		
 		animate: function() {
 			
 			requestAnimationFrame(this.animate);
@@ -318,7 +225,12 @@ $(function( $ ) {
 		
 		render: function() {
 			
-			this.simulateMovement();
+			var track = app.game.track;
+			var trackMesh = this.trackMesh;
+			var vehicle = app.game.vehicle;
+			var vehicleMesh = this.vehicleMesh;
+			
+			app.game.simulateMovement();
 			
 			this.animateTargets();
 			
